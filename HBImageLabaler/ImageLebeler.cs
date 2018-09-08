@@ -13,7 +13,7 @@ using Newtonsoft.Json;
 
 namespace HBImageLabaler
 {
-    public partial class Form1 : Form
+    public partial class ImageLebeler : Form
     {
         private string SourcePath = "";
         private int currentIndex = 0;
@@ -51,7 +51,7 @@ namespace HBImageLabaler
         }
 // marqurel code end
 
-        public Form1()
+        public ImageLebeler()
         {
             InitializeComponent();
             ctxClassLebels.ItemAdded += new ToolStripItemEventHandler(context_added);
@@ -374,31 +374,37 @@ namespace HBImageLabaler
         private void mergeToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Project toImport = new Project();
-            using (StreamReader r = new StreamReader(_currentProject.Path + MergeFolder + _currentProject.Name+ ".json"))
+            string projectName = Microsoft.VisualBasic.Interaction.InputBox("Input Project Name", "Project Name to Merge", _currentProject.Name, -1, -1);
+            if(projectName != "")
             {
-                string json = r.ReadToEnd();
-                toImport = JsonConvert.DeserializeObject<Project>(json);
-            }
-
-            if(toImport.Name == _currentProject.Name)
-            {
-                foreach (Img image in toImport.Images)
+                using (StreamReader r = new StreamReader(_currentProject.Path + MergeFolder + projectName + ".json"))
                 {
-                    if (!_currentProject.Images.Any(i=> i.Id == image.Id))
+                    string json = r.ReadToEnd();
+                    toImport = JsonConvert.DeserializeObject<Project>(json);
+                }
+
+                if (toImport.Name == projectName)
+                {
+                    foreach (Img image in toImport.Images)
                     {
-                        //copy
-                        string filename = image.Id + "." + image.OriginalName.Split('.')[1];
-                        Image imagetocopy = Image.FromFile(_currentProject.Path + MergeFolder +labeledImagesPath + filename);
-                        imagetocopy.Save(_currentProject.Path + labeledImagesPath + filename);
+                        if (!_currentProject.Images.Any(i => i.Id == image.Id))
+                        {
+                            //copy
+                            string filename = image.Id + "." + image.OriginalName.Split('.')[1];
+                            Image imagetocopy = Image.FromFile(_currentProject.Path + MergeFolder + labeledImagesPath + filename);
+                            imagetocopy.Save(_currentProject.Path + labeledImagesPath + filename);
 
-                        _currentProject.Images.Add(image);
-                        updateProjectJson();
-                        MessageBox.Show("Merge Done");
+                            _currentProject.Images.Add(image);
+                            updateProjectJson();
+                            //
 
 
+                        }
                     }
+                    MessageBox.Show("Merge Done");
                 }
             }
+           
 
         }
 
