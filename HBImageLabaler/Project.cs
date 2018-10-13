@@ -27,10 +27,40 @@ namespace HBImageLabaler
     
     public class ImgLabel
     {
+        public int Id { get; set; }
         public int X1 { get; set; }
         public int Y1 { get; set; }
         public int X2 { get; set; }
         public int Y2 { get; set; }
         public string Label { get; set; }
+    }
+    public class HBRectangle 
+    {
+        public System.Drawing.Rectangle rectangle { get; set; }
+        public int Id { get; set; }
+
+       
+    }
+    public class RectangleList : List<HBRectangle>
+    {
+        public System.Drawing.Rectangle[] ConvertToArray()
+        {
+            List<System.Drawing.Rectangle> arr = new List<System.Drawing.Rectangle>();
+            foreach (var item in this)
+            {
+                arr.Add(item.rectangle);
+            }
+            return arr.ToArray();
+        }
+
+        public List<System.Drawing.Rectangle> GetRectangleList()
+        {
+            List<System.Drawing.Rectangle> arr = new List<System.Drawing.Rectangle>();
+            foreach (var item in this)
+            {
+                arr.Add(item.rectangle);
+            }
+            return arr;
+        }
     }
 }

@@ -39,7 +39,7 @@ namespace HBImageLabaler
         Point currentPos;    // current mouse position
         bool drawing;        // busy drawing
         bool opening= false;        //Project Openning
-        List<Rectangle> rectangles = new List<Rectangle>();  // previous rectangles
+        RectangleList rectangles = new RectangleList();  // previous rectangles
 
         private Rectangle getRectangle()
         {
@@ -114,8 +114,8 @@ namespace HBImageLabaler
             {
                 ActiveImage.AnnotatedLabels = new List<ImgLabel>();
             }
-            Rectangle last = rectangles.Last();
-            ActiveImage.AnnotatedLabels.Add(new ImgLabel { X1 = last.Left, Y1 = last.Top, X2 = (last.Left + last.Width), Y2 = (last.Top + last.Height), Label = sender.ToString() });
+            Rectangle last = rectangles.GetRectangleList().Last();
+            ActiveImage.AnnotatedLabels.Add(new ImgLabel {Id= ActiveImage.AnnotatedLabels.Count+1, X1 = last.Left, Y1 = last.Top, X2 = (last.Left + last.Width), Y2 = (last.Top + last.Height), Label = sender.ToString() });
 
 
 
@@ -177,7 +177,8 @@ namespace HBImageLabaler
             {
                 drawing = false;
                 var rc = getRectangle();
-                if (rc.Width > 0 && rc.Height > 0) rectangles.Add(rc);
+                if (rc.Width > 0 && rc.Height > 0)
+                    rectangles.Add(new HBRectangle { rectangle =rc, Id= rectangles.GetRectangleList().Count()+1} );
                 pictureBox1.Invalidate();
             }
         }
@@ -304,58 +305,79 @@ namespace HBImageLabaler
 
         private void clbImageList_SelectedIndexChanged(object sender, EventArgs e)
         {
+            SelctionChanges(clbImageList.SelectedIndex);
 
         }
-
-        private void clbImageList_ItemCheck(object sender, ItemCheckEventArgs e)
+        private void btnUpdateLabels_Click(object sender, EventArgs e)
         {
+           DialogResult res= MessageBox.Show("Do you really want to Update","Update Labels",MessageBoxButtons.YesNo);
+            List<ImgLabel> updatedLabels = new List<ImgLabel>();
+            if (res == DialogResult.Yes)
+            {
+                foreach (var item in chkLLabelList.CheckedItems  )
+                {
+                    // if(item.ToString().Split('_')[0] == )
+                    ImgLabel label = ActiveImage.AnnotatedLabels.Where(l => l.Id.ToString() == item.ToString().Split('_')[0]).FirstOrDefault();
+                    label.Id = updatedLabels.Count() + 1;
+                    updatedLabels.Add( label);
 
-            string selectedimagepath =clbImageList.GetItemText(clbImageList.Items[e.Index]);
-            currentIndex = e.Index;
+                }
+
+                ActiveImage.AnnotatedLabels = updatedLabels;
+                updateProjectJson();
+            }
+        }
+
+        private void SelctionChanges(int selectionIndex)
+        {
+            string selectedimagepath = clbImageList.GetItemText(clbImageList.Items[selectionIndex]);
+            currentIndex = selectionIndex;
             try
             {
-
                 pictureBox1.Load(selectedimagepath);
                 ActiveViewableImage = Image.FromFile(selectedimagepath);
-               
+
 
                 ActiveImage = new Img();
                 ActiveImage.Id = Guid.NewGuid().ToString();
                 ActiveImage.OriginalName = selectedimagepath;
-
-                rectangles.Clear();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("No Image Selected");
+            }
+              
                 try
                 {
 
-
+                    rectangles.Clear();
                     if (_currentProject.Images.Any(i => i.OriginalName == selectedimagepath))
                     {
                         ActiveImage = _currentProject.Images.Single(i => i.OriginalName == selectedimagepath);
                         List<ImgLabel> labels = ActiveImage.AnnotatedLabels;
+                        chkLLabelList.Items.Clear();
                         foreach (var item in labels)
                         {
-                            rectangles.Add(new Rectangle(item.X1, item.Y1, item.X2 - item.X1, item.Y2 - item.Y1));
+                            rectangles.Add(new HBRectangle { Id = item.Id, rectangle = new Rectangle(item.X1, item.Y1, item.X2 - item.X1, item.Y2 - item.Y1) });
+                           // rectangles.Add(new Rectangle(item.X1, item.Y1, item.X2 - item.X1, item.Y2 - item.Y1));
+                            chkLLabelList.Items.Add(item.Id+"_"+item.Label, CheckState.Checked);
                         }
 
                     }
+                               
                 }
-                catch (Exception ex)
+                catch (Exception ex1)
                 {
-                    Console.WriteLine("No Image Selected");
 
+                    Console.WriteLine("No Image Data");
                 }
-            }
-            catch (Exception ex1)
-            {
+        }
 
-                Console.WriteLine("No Image Data");
-            }
-           
-          
+        private void clbImageList_ItemCheck(object sender, ItemCheckEventArgs e)
+        {
+            clbImageList.SelectedIndex = e.Index;
+           // SelctionChanges(e.Index);
 
-
-            //Img rec = new Img();
-            //_currentProject.Records.Add()
         }
 
         private void btnNext_Click(object sender, EventArgs e)
@@ -476,7 +498,15 @@ namespace HBImageLabaler
         {
             if (!opening)
             {
-                if (rectangles.Count > 0) e.Graphics.DrawRectangles(Pens.Black, rectangles.ToArray());
+                if (rectangles.Count > 0)
+                {
+                    e.Graphics.DrawRectangles(Pens.Black, rectangles.ConvertToArray());
+                    foreach (var item in rectangles)
+                    {
+                        e.Graphics.DrawString(item.Id.ToString(), this.Font, Brushes.Blue,
+                                    item.rectangle.X + 5, item.rectangle.Y + 5);
+                    }
+                }
 
             }
             
@@ -518,6 +548,48 @@ namespace HBImageLabaler
             currentPos = startPos = e.Location;
             drawing = true;
         }
+
+        private void splitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            foreach (var classLabel in _currentProject.Classes )
+            {
+                Directory.CreateDirectory(_currentProject.Path + LabelsPath + classLabel);
+
+            }
+         
+            foreach (Img img in _currentProject.Images)
+            {
+                if (img.AnnotatedLabels != null)
+                {
+                    foreach (ImgLabel item in img.AnnotatedLabels)
+                    {
+                        //Bitmap bmp = 
+                        Image image = Image.FromFile(img.OriginalName);
+                        Image newSlice = new Bitmap(Math.Abs(item.X2 - item.X1), Math.Abs(item.Y2 - item.Y1));
+                        using (Graphics gr =Graphics.FromImage(newSlice))
+                        {
+                            gr.DrawImage(image, new Rectangle(0, 0, Math.Abs(item.X2 - item.X1), Math.Abs(item.Y2 - item.Y1)), new Rectangle(item.X1,item.Y1, Math.Abs(item.X2 - item.X1), Math.Abs(item.Y2 - item.Y1)), GraphicsUnit.Pixel);
+                        }
+
+                        newSlice.Save(_currentProject.Path + LabelsPath + item.Label + "\\" + img.Id + "." + img.OriginalName.Split('.')[1]);
+
+                     
+                    }
+                }
+                //else
+                //{
+                //    image = Image.FromFile(img.OriginalName);
+                //    image.Save(_currentProject.Path + OmitsPath + ActiveImage.OriginalName.Split('\\').Last());
+
+
+                //}
+
+            }
+            MessageBox.Show("Split Done.");
+
+        }
+
+       
     }
 
    
