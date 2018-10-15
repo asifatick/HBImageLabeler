@@ -20,18 +20,18 @@ namespace HBImageLabaler
         //private int x1, x2, y1, y2 = 0;
         private List<string> classes = new List<string>();
 
-        string labeledImagesPath = "\\LabeledImages\\";
-        string MergeFolder = "\\MergeFolder\\";
-        string LabelsPath = "\\Labels\\";
-        string OmitsPath = "\\Omits\\";
-        string FinishedImagesPath = "\\FinishedImages\\";
-        string WorkInProgressImagesPath = "\\WorkInProgressImages\\";
+        public string labeledImagesPath = "\\LabeledImages\\";
+        public string MergeFolder = "\\MergeFolder\\";
+        public string LabelsPath = "\\Labels\\";
+        public string OmitsPath = "\\Omits\\";
+        public string FinishedImagesPath = "\\FinishedImages\\";
+        public string WorkInProgressImagesPath = "\\WorkInProgressImages\\";
 
-        string currentProjectPath = "";
-        string projectName = "";
-        Project _currentProject = new Project();
-        Img ActiveImage = new Img();
-        Image ActiveViewableImage;
+        public string currentProjectPath = "";
+        public string projectName = "";
+        public Project _currentProject = new Project();
+        public Img ActiveImage = new Img();
+        public Image ActiveViewableImage;
 
 
         //For Drawing Marquerel
@@ -549,7 +549,7 @@ namespace HBImageLabaler
             drawing = true;
         }
 
-        private void splitToolStripMenuItem_Click(object sender, EventArgs e)
+        public void splitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             foreach (var classLabel in _currentProject.Classes )
             {
@@ -571,7 +571,7 @@ namespace HBImageLabaler
                             gr.DrawImage(image, new Rectangle(0, 0, Math.Abs(item.X2 - item.X1), Math.Abs(item.Y2 - item.Y1)), new Rectangle(item.X1,item.Y1, Math.Abs(item.X2 - item.X1), Math.Abs(item.Y2 - item.Y1)), GraphicsUnit.Pixel);
                         }
 
-                        newSlice.Save(_currentProject.Path + LabelsPath + item.Label + "\\" + img.Id + "." + img.OriginalName.Split('.')[1]);
+                        newSlice.Save(_currentProject.Path + LabelsPath + item.Label + "\\" + item.Id +"_"+img.Id+ "." + img.OriginalName.Split('.')[1]);
 
                      
                     }
@@ -589,7 +589,12 @@ namespace HBImageLabaler
 
         }
 
-       
+        private void exportToCSVToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ExportWizard exportForm = new ExportWizard();
+            exportForm.mainForm = this;
+            exportForm.Show();
+        }
     }
 
    
