@@ -435,12 +435,16 @@ namespace HBImageLabaler
             using (StreamWriter sw = new StreamWriter(_currentProject.Path + "\\" + LabelsPath+_currentProject.Name + ".csv"))
             {
                 StringBuilder sb = new StringBuilder();
-              
+                sb.AppendLine(string.Join(",", new[] { "filename",
+                                                    "width","height",
+                                                    "class", "labelIndex" , "xmin","ymin",
+                                                    "xmax","ymax"}));
                 //  sw.WriteLine("Hello World!");
                 foreach (Img img in _currentProject.Images)
                 {
                     if (img.AnnotatedLabels != null)
                     {
+
                         foreach (ImgLabel item in img.AnnotatedLabels)
                         {
                             sb.AppendLine(string.Join(",", new[] { img.Id+"."+img.OriginalName.Split('.')[1],

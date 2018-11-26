@@ -109,10 +109,10 @@ namespace HBImageLabaler
                 StringBuilder sb = new StringBuilder();
 
                 //  sw.WriteLine("Hello World!");
-                sb.AppendLine(string.Join(",", new[] { "FileName",
-                                                    "Width","Height",
-                                                    "Label", "LabelIndex" , "X1","Y1",
-                                                    "X2","Y2"}));
+                sb.AppendLine(string.Join(",", new[] { "filename",
+                                                    "width","height",
+                                                    "class", "labelIndex" , "xmin","ymin",
+                                                    "xmax","ymax"}));
                 foreach (Img img in mainForm._currentProject.Images)
                 {
                     if (img.AnnotatedLabels != null)
