@@ -552,7 +552,7 @@ namespace HBImageLabaler
             currentPos = startPos = e.Location;
             drawing = true;
             // runtime rectangle remove v8.1
-            if (e.Button == MouseButtons.Right)
+            if ((e.Button == MouseButtons.Right) && (rectangles.Count > 0))
             {
                 rectangles.RemoveAt(rectangles.Count - 1);
             }
