@@ -551,6 +551,11 @@ namespace HBImageLabaler
         {
             currentPos = startPos = e.Location;
             drawing = true;
+            // runtime rectangle remove v8.1
+            if (e.Button == MouseButtons.Right)
+            {
+                rectangles.RemoveAt(rectangles.Count - 1);
+            }
         }
 
         public void splitToolStripMenuItem_Click(object sender, EventArgs e)
