@@ -117,7 +117,7 @@ namespace HBImageLabaler
             Rectangle last = rectangles.GetRectangleList().Last();
             ActiveImage.AnnotatedLabels.Add(new ImgLabel {Id= ActiveImage.AnnotatedLabels.Count+1, X1 = last.Left, Y1 = last.Top, X2 = (last.Left + last.Width), Y2 = (last.Top + last.Height), Label = sender.ToString() });
 
-
+            PopulateAnnotatedLabelsList(ActiveImage.AnnotatedLabels);
 
            // updateProjectJson();
 
@@ -167,23 +167,49 @@ namespace HBImageLabaler
 
         private void pictureBox1_MouseUp(object sender, MouseEventArgs e)
         {
-            if (pictureBox1.Image != null)
+            // runtime rectangle remove v8.1
+            if ((e.Button == MouseButtons.Right) && (rectangles.Count > 0))
             {
+                Rectangle last = rectangles.GetRectangleList().Last();
+                ImgLabel lastLabel = ActiveImage.AnnotatedLabels.Last();
+                ActiveImage.AnnotatedLabels.Remove(lastLabel);
+                PopulateAnnotatedLabelsList(ActiveImage.AnnotatedLabels);
 
-                ctxClassLebels.Show(e.X + splitContainer1.Left, e.Y + splitContainer1.Top);
+                //rectangles.RemoveAt(rectangles.Count - 1);
+               
+                ctxClassLebels.Hide();
             }
-
-            if (drawing)
+            else
             {
-                drawing = false;
-                var rc = getRectangle();
-                if (rc.Width > 0 && rc.Height > 0)
-                    rectangles.Add(new HBRectangle { rectangle =rc, Id= rectangles.GetRectangleList().Count()+1} );
-                pictureBox1.Invalidate();
+
+           
+                if (pictureBox1.Image != null)
+                {
+
+                    ctxClassLebels.Show(e.X + splitContainer1.Left, e.Y + splitContainer1.Top);
+                }
+
+                if (drawing)
+                {
+                    drawing = false;
+                    var rc = getRectangle();
+                    if (rc.Width > 0 && rc.Height > 0)
+                        rectangles.Add(new HBRectangle { rectangle =rc, Id= rectangles.GetRectangleList().Count()+1} );
+                    pictureBox1.Invalidate();
+                }
             }
         }
 
-       
+        private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+
+            {
+                currentPos = startPos = e.Location;
+                drawing = true;
+
+            }
+        }
 
         private void newToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -325,6 +351,7 @@ namespace HBImageLabaler
 
                 ActiveImage.AnnotatedLabels = updatedLabels;
                 updateProjectJson();
+                PopulateAnnotatedLabelsList(ActiveImage.AnnotatedLabels);
             }
         }
 
@@ -352,25 +379,32 @@ namespace HBImageLabaler
 
                     rectangles.Clear();
                     if (_currentProject.Images.Any(i => i.OriginalName == selectedimagepath))
-                    {
-                        ActiveImage = _currentProject.Images.Single(i => i.OriginalName == selectedimagepath);
-                        List<ImgLabel> labels = ActiveImage.AnnotatedLabels;
-                        chkLLabelList.Items.Clear();
-                        foreach (var item in labels)
-                        {
-                            rectangles.Add(new HBRectangle { Id = item.Id, rectangle = new Rectangle(item.X1, item.Y1, item.X2 - item.X1, item.Y2 - item.Y1) });
-                           // rectangles.Add(new Rectangle(item.X1, item.Y1, item.X2 - item.X1, item.Y2 - item.Y1));
-                            chkLLabelList.Items.Add(item.Id+"_"+item.Label, CheckState.Checked);
-                        }
+                {
+                    ActiveImage = _currentProject.Images.Single(i => i.OriginalName == selectedimagepath);
+                    List<ImgLabel> labels = ActiveImage.AnnotatedLabels;
+                    PopulateAnnotatedLabelsList(labels);
 
-                    }
-                               
                 }
+
+            }
                 catch (Exception ex1)
                 {
 
                     Console.WriteLine("No Image Data");
                 }
+        }
+
+        private void PopulateAnnotatedLabelsList(List<ImgLabel> labels)
+        {
+            chkLLabelList.Items.Clear();
+            rectangles.Clear();
+            foreach (var item in labels)
+            {
+                rectangles.Add(new HBRectangle { Id = item.Id, rectangle = new Rectangle(item.X1, item.Y1, item.X2 - item.X1, item.Y2 - item.Y1) });
+                // rectangles.Add(new Rectangle(item.X1, item.Y1, item.X2 - item.X1, item.Y2 - item.Y1));
+                chkLLabelList.Items.Add(item.Id + "_" + item.Label, CheckState.Checked);
+            }
+            pictureBox1.Invalidate();
         }
 
         private void clbImageList_ItemCheck(object sender, ItemCheckEventArgs e)
@@ -547,16 +581,7 @@ namespace HBImageLabaler
 
         }
 
-        private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
-        {
-            currentPos = startPos = e.Location;
-            drawing = true;
-            // runtime rectangle remove v8.1
-            if ((e.Button == MouseButtons.Right) && (rectangles.Count > 0))
-            {
-                rectangles.RemoveAt(rectangles.Count - 1);
-            }
-        }
+       
 
         public void splitToolStripMenuItem_Click(object sender, EventArgs e)
         {
