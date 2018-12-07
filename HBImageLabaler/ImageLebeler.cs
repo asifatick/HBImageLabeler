@@ -471,7 +471,7 @@ namespace HBImageLabaler
                 StringBuilder sb = new StringBuilder();
                 sb.AppendLine(string.Join(",", new[] { "filename",
                                                     "width","height",
-                                                    "class", "labelIndex" , "xmin","ymin",
+                                                    "class",  "xmin","ymin",
                                                     "xmax","ymax"}));
                 //  sw.WriteLine("Hello World!");
                 foreach (Img img in _currentProject.Images)
@@ -628,6 +628,16 @@ namespace HBImageLabaler
             ExportWizard exportForm = new ExportWizard();
             exportForm.mainForm = this;
             exportForm.Show();
+        }
+
+        private void lblCurrentProject_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+
         }
     }
 

@@ -111,7 +111,7 @@ namespace HBImageLabaler
                 //  sw.WriteLine("Hello World!");
                 sb.AppendLine(string.Join(",", new[] { "filename",
                                                     "width","height",
-                                                    "class", "labelIndex" , "xmin","ymin",
+                                                    "class", "xmin","ymin",
                                                     "xmax","ymax"}));
                 foreach (Img img in mainForm._currentProject.Images)
                 {
@@ -123,9 +123,10 @@ namespace HBImageLabaler
                             {
                                 if(selectedImages[img.Id+"_"+item.Id])
                                 {
+                                    //label indec removed (mainForm._currentProject.Classes.IndexOf(item.Label)+1).ToString() ,
                                     sb.AppendLine(string.Join(",", new[] { img.Id+"."+img.OriginalName.Split('.')[1],
                                                     img.Width.ToString(),img.Height.ToString(),
-                                                    item.Label, (mainForm._currentProject.Classes.IndexOf(item.Label)+1).ToString() , item.X1.ToString(),item.Y1.ToString(),
+                                                    item.Label,  item.X1.ToString(),item.Y1.ToString(),
                                                     item.X2.ToString(),item.Y2.ToString()}));
                                 }
                             }
