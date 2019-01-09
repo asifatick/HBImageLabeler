@@ -509,9 +509,18 @@ namespace HBImageLabaler
             List<Img> NullAnnotations = _currentProject.Images.Where(i => i.AnnotatedLabels == null).ToList();
             foreach (Img item in NullAnnotations)
             {
-                image = Image.FromFile(item.OriginalName);
-                image.Save(_currentProject.Path + OmitsPath + item.OriginalName.Split('\\').Last());
+                try
+                {
+                    image = Image.FromFile(item.OriginalName);
+                    image.Save(_currentProject.Path + OmitsPath + item.OriginalName.Split('\\').Last());
 
+                }
+                catch (Exception)
+                {
+
+                    
+                }
+                
             }
             MessageBox.Show("Export Done.");
         }
@@ -585,6 +594,7 @@ namespace HBImageLabaler
 
         public void splitToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            MessageBox.Show("Please Clear the Existing split images first if Required!!!","Warning!!!");
             foreach (var classLabel in _currentProject.Classes )
             {
                 Directory.CreateDirectory(_currentProject.Path + LabelsPath + classLabel);
@@ -598,7 +608,7 @@ namespace HBImageLabaler
                     foreach (ImgLabel item in img.AnnotatedLabels)
                     {
                         //Bitmap bmp = 
-                        Image image = Image.FromFile(img.OriginalName);
+                        Image image = Image.FromFile(_currentProject.Path + labeledImagesPath+img.Id+"."+img.OriginalName.Split('.')[1]);
                         Image newSlice = new Bitmap(Math.Abs(item.X2 - item.X1), Math.Abs(item.Y2 - item.Y1));
                         using (Graphics gr =Graphics.FromImage(newSlice))
                         {

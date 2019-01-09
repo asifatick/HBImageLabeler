@@ -25,7 +25,7 @@ namespace HBImageLabaler
 
         private void ExportWizard_Load(object sender, EventArgs e)
         {
-            mainForm.splitToolStripMenuItem_Click(sender, e);
+           // mainForm.splitToolStripMenuItem_Click(sender, e);
             lstImages.BeginUpdate();
             
             foreach (var item in mainForm._currentProject.Classes)
@@ -48,22 +48,24 @@ namespace HBImageLabaler
 
         private void LoadImages( string folderPath, string group)
         {
-            List<string> files = Directory.EnumerateFiles(folderPath).Where(s => s.EndsWith(".jpg") || s.EndsWith(".jpeg") || s.EndsWith(".png")).ToList();
-            //
-            foreach (var item in files)
+            if (Directory.Exists(folderPath))
             {
+                List<string> files = Directory.EnumerateFiles(folderPath).Where(s => s.EndsWith(".jpg") || s.EndsWith(".jpeg") || s.EndsWith(".png")).ToList();
+                //
+                foreach (var item in files)
+                {
 
 
-                addImage(item,group);
+                    addImage(item, group);
+                }
             }
-          
         }
         private void addImage(string imageToLoad, string group)
         {
             if (imageToLoad != "")
             {
-                string id = imageToLoad.Split('\\')[4].Split('_')[1].Split('.')[0];
-                string order = imageToLoad.Split('\\')[4].Split('_')[0];
+                string id = imageToLoad.Split('\\').Last().Split('_')[1].Split('.')[0];
+                string order = imageToLoad.Split('\\').Last().Split('_')[0];
                 string key = id + "_" + order;
                 imageList.Images.Add(key,Image.FromFile(imageToLoad));
                 //lstImages.BeginUpdate();
