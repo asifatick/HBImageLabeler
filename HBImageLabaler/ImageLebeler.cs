@@ -147,20 +147,23 @@ namespace HBImageLabaler
 
         private void OpenSourceFolder(string Path)
         {
-            SourcePath = Path;
-            List<string> files = Directory.EnumerateFiles(SourcePath).Where(s => s.EndsWith(".jpg") || s.EndsWith(".jpeg") || s.EndsWith(".png")).ToList();
-            //
-            foreach (var item in files)
+            if (Directory.Exists(Path))
             {
+                SourcePath = Path;
+                List<string> files = Directory.EnumerateFiles(SourcePath).Where(s => s.EndsWith(".jpg") || s.EndsWith(".jpeg") || s.EndsWith(".png")).ToList();
+                //
+                foreach (var item in files)
+                {
 
-                clbImageList.Items.Add(item);
+                    clbImageList.Items.Add(item);
 
-            }
-            _currentProject.LastActiveSourceFolder = SourcePath;
-            updateProjectJson();
-            if (clbImageList.Items.Count > 0)
-            {
-                clbImageList.SetItemCheckState(0, CheckState.Checked);
+                }
+                _currentProject.LastActiveSourceFolder = SourcePath;
+                updateProjectJson();
+                if (clbImageList.Items.Count > 0)
+                {
+                    clbImageList.SetItemCheckState(0, CheckState.Checked);
+                }
             }
         }
 
@@ -441,6 +444,13 @@ namespace HBImageLabaler
 
                 if (toImport.Name == projectName)
                 {
+                    foreach (string labelclass in toImport.Classes)
+                    {
+                        if(!_currentProject.Classes.Exists(c=> c==labelclass))
+                        {
+                            _currentProject.Classes.Add(labelclass);
+                        }
+                    }
                     foreach (Img image in toImport.Images)
                     {
                         if (!_currentProject.Images.Any(i => i.Id == image.Id))
